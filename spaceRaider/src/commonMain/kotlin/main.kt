@@ -268,7 +268,7 @@ class PlanetGenerator(par: Container,pl: View) {
 		for (i in rang) {
 			for (j in rang) {
 				if (worldXYCheck[i][j] == 1) {
-					var r = SolidRect(25, 25, color = planetColors[Random.nextInt(0, planetColors.size - 1)])
+					var r = SolidRect(25, 25, color = Colors["#465055"])
 					r.name = "block"
 					r.apply {
 						x = 244.0 + (i - 5) * 25

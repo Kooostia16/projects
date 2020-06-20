@@ -22,6 +22,7 @@ val PI_HALF: Angle = (3.14/2.0).radians
 val PI_HALFD: Double = (3.14/2.0)
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#cac5e5"]) {
+	val baseScale: Double = scaleX // Stage.scaleX might be different to 1.0 on retina displays
 	val player = image(resourcesVfs["/assets/spaceship.png"].readBitmap()) {
 		x = 40.0
 		y = 40.0
@@ -32,57 +33,57 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#cac5e5"
 		smoothing = false
 	}
 
-	player.xy(100,100)
+	player.xy(100, 100)
 
-	var rot = Point(0.0,0.1)
-	var vecForce = Point(0.0,0.0)
-	var addForce = Point(0.0,0.0)
+	var rot = Point(0.0, 0.1)
+	var vecForce = Point(0.0, 0.0)
+	var addForce = Point(0.0, 0.0)
 	var addForceMult = 0.0
 	var maxForce = 20.0
 
-	val wo = PlanetGenerator(this,player)
+	val wo = PlanetGenerator(this, player)
 
 	wo.generate(10)
 
 	fun restart() {
-		scale(0.8,0.8)
-		wo.regenerate(Random.nextInt(50,60))
+		scale(baseScale * 0.8, baseScale * 0.8)
+		wo.regenerate(Random.nextInt(50, 60))
 		player.apply {
 			x = 256.0
 			y = 450.0
 		}
-		vecForce = Point(0,0)
-		addForce = Point(0,0)
+		vecForce = Point(0, 0)
+		addForce = Point(0, 0)
 	}
 
 	addHrUpdater() { t ->
-		val dt = t/16.hrMilliseconds
-		addForce.x = addForceMult*cos(player.rotation-PI_HALF) * maxForce
-		addForce.y = addForceMult*sin(player.rotation-PI_HALF) * maxForce
+		val dt = t / 16.hrMilliseconds
+		addForce.x = addForceMult * cos(player.rotation - PI_HALF) * maxForce
+		addForce.y = addForceMult * sin(player.rotation - PI_HALF) * maxForce
 		var gravVec = Point(256 - player.x, 256 - player.y)
-		var gravAngle = atan2(gravVec.y,gravVec.x)
+		var gravAngle = atan2(gravVec.y, gravVec.x)
 		//vecForce.x += cos(gravAngle)*5*dt*0.001
 		//vecForce.y += sin(gravAngle)*5*dt*0.001
 		var vec = Point(addForce.x - vecForce.x, addForce.y - vecForce.y)
-		vecForce.x += vec.x*dt*0.001
-		vecForce.y += vec.y*dt*0.001
+		vecForce.x += vec.x * dt * 0.001
+		vecForce.y += vec.y * dt * 0.001
 		player.x += vecForce.x
 		player.y += vecForce.y
-		player.rotation += (rot.x*rot.y*dt).radians
-		scaleX = (scaleX+dt*0.01).clamp(0.4,1.0)
-		scaleY = (scaleY+dt*0.01).clamp(0.4,1.0)
+		player.rotation += (rot.x * rot.y * dt).radians
+		scaleX = baseScale * ((scaleX + dt * 0.01).clamp(0.4, 1.0))
+		scaleY = baseScale * ((scaleY + dt * 0.01).clamp(0.4, 1.0))
 
 		if (wo.towers.size == 0) {
 			restart()
 		}
 
-		if (player.x > 512 || player.x < 0 || player.y > 512 || player.y < 0 ) {
+		if (player.x > 512 || player.x < 0 || player.y > 512 || player.y < 0) {
 			restart()
 		}
 
 	}
 
-	player.onCollision({it.name == "bulletEnemy" || it.name == "tower" || it.name == "block"}) {
+	player.onCollision({ it.name == "bulletEnemy" || it.name == "tower" || it.name == "block" }) {
 		it.removeFromParent()
 		restart()
 	}
@@ -99,7 +100,7 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#cac5e5"
 
 			if (it == Key.Z) {
 				var a = player.rotation - PI_HALF
-				BulletPlayer(player.parent!!,wo.towers,Point(cos(a)*4,sin(a)*4),Point(player.x+cos(a)*16,player.y+sin(a)*16))
+				BulletPlayer(player.parent!!, wo.towers, Point(cos(a) * 4, sin(a) * 4), Point(player.x + cos(a) * 16, player.y + sin(a) * 16))
 			}
 		}
 
@@ -111,7 +112,6 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#cac5e5"
 			}
 		}
 	}
-
 
 }
 
@@ -154,7 +154,7 @@ class BulletTowers(par: Container, pl: View, vecF: Point,pos: Point) {
 
 	init {
 		var circ = Circle(1.00, Colors.RED)
-        circ.name = "bulletEnemy"
+		circ.name = "bulletEnemy"
 		circ.xy(pos.x,pos.y)
 		parent += circ
 
